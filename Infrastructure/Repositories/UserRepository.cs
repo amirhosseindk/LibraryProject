@@ -8,10 +8,12 @@ namespace Infrastructure.Repositories
     public class UserRepository : IRepository<User>
     {
         private readonly IDbConnection _connection;
+        private readonly IDbTransaction _transaction;
 
-        public UserRepository(IDbConnection connection)
+        public UserRepository(IDbConnection connection, IDbTransaction transaction)
         {
             _connection = connection;
+            _transaction = transaction;
         }
 
         public async Task<User> GetByIdAsync(int id)

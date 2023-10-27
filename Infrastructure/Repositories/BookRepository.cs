@@ -8,10 +8,12 @@ namespace Infrastructure.Repositories
     public class BookRepository : IRepository<Book>
     {
         private readonly IDbConnection _connection;
+        private readonly IDbTransaction _transaction;
 
-        public BookRepository(IDbConnection connection)
+        public BookRepository(IDbConnection connection, IDbTransaction transaction)
         {
             _connection = connection;
+            _transaction = transaction;
         }
 
         public async Task<Book> GetByIdAsync(int id)

@@ -10,5 +10,6 @@ namespace Application.Patterns
         IRepository<Category> CategoryRepository { get; }
         IRepository<Inventory> InventoryRepository { get; }
         Task SaveAsync();
+        void Dispose();
     }
 }

@@ -7,5 +7,4 @@
         public int QuantitySold { get; set; }
         public int QuantityBorrowed { get; set; }
     }
-
 }
