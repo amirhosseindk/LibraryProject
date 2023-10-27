@@ -10,6 +10,5 @@ namespace Application.UseCases.Author
         Task DeleteAuthor(int authorId);
         Task<AuthorRDto> GetAuthorDetails(int authorId);
         Task<IEnumerable<AuthorRDto>> ListAuthors();
-        Task<IEnumerable<BookRDto>> ListBooksByAuthor(int authorId);
     }
 }

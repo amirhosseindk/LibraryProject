@@ -45,5 +45,11 @@ namespace Infrastructure.Repositories
             var query = "DELETE FROM Users WHERE ID = @ID";
             _connection.Execute(query, new { user.ID });
         }
+
+        public async Task<User> GetByNameAsync(string name)
+        {
+            var query = "SELECT * FROM Users WHERE Name = @name";
+            return await _connection.QuerySingleOrDefaultAsync<User>(query, new { Name = name });
+        }
     }
 }

@@ -22,6 +22,12 @@ namespace Infrastructure.Repositories
             return await _connection.QuerySingleOrDefaultAsync<Book>(query, new { Id = id });
         }
 
+        public async Task<Book> GetByNameAsync(string name)
+        {
+            var query = "SELECT * FROM Books WHERE Name = @Name";
+            return await _connection.QuerySingleOrDefaultAsync<Book>(query, new { Name = name });
+        }
+
         public async Task<IEnumerable<Book>> GetAllAsync()
         {
             var query = "SELECT * FROM Books";

@@ -3,6 +3,7 @@
     public interface IRepository<TEntity> where TEntity : class
     {
         Task<TEntity> GetByIdAsync(int id);
+        Task<TEntity> GetByNameAsync(string name);
         Task<IEnumerable<TEntity>> GetAllAsync();
         Task AddAsync(TEntity entity);
         void Update(TEntity entity);

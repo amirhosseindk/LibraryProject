@@ -43,7 +43,17 @@ namespace Infrastructure.Repositories
         public void Delete(Inventory inventory)
         {
             var query = "DELETE FROM Inventories WHERE BookID = @BookID";
-            _connection.Execute(query, new { inventory.BookID });
+            _connection.Execute(query, new { BookID = inventory.Book.ID });
         }
+
+        public async Task<Inventory> GetByNameAsync(string name)
+        {
+            var query = @"SELECT i.* 
+                  FROM Inventories i
+                  JOIN Books b ON i.BookID = b.ID
+                  WHERE b.Name = @Name";
+            return await _connection.QuerySingleOrDefaultAsync<Inventory>(query, new { Name = name });
+        }
+
     }
 }

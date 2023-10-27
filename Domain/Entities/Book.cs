@@ -12,5 +12,4 @@
         public string Summary { get; set; }
         public DateTime PublishYear { get; set; }
     }
-
 }

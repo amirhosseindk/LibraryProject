@@ -9,7 +9,7 @@ namespace Application.UseCases.Category
         Task UpdateCategory(CategoryUDto categoryDto);
         Task DeleteCategory(int categoryId);
         Task<CategoryRDto> GetCategoryDetails(int categoryId);
+        Task<CategoryRDto> GetCategoryDetails(string name);
         Task<IEnumerable<CategoryRDto>> ListCategories();
-        Task<IEnumerable<BookRDto>> ListBooksByCategory(int categoryId);
     }
 }

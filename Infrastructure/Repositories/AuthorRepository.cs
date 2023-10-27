@@ -22,6 +22,12 @@ namespace Infrastructure.Repositories
             return await _connection.QuerySingleOrDefaultAsync<Author>(query, new { Id = id });
         }
 
+        public async Task<Author> GetByNameAsync(string lastName)
+        {
+            var query = "SELECT * FROM Authors WHERE FirstName = LastName = @LastName";
+            return await _connection.QuerySingleOrDefaultAsync<Author>(query, new { LastName = lastName });
+        }
+
         public async Task<IEnumerable<Author>> GetAllAsync()
         {
             var query = "SELECT * FROM Authors";

@@ -45,5 +45,11 @@ namespace Infrastructure.Repositories
             var query = "DELETE FROM Categories WHERE ID = @ID";
             _connection.Execute(query, new { category.ID });
         }
+
+        public async Task<Category> GetByNameAsync(string name)
+        {
+            var query = "SELECT * FROM Categories WHERE Name = @name";
+            return await _connection.QuerySingleOrDefaultAsync<Category>(query, new { Name = name });
+        }
     }
 }
