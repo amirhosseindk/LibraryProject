@@ -7,13 +7,12 @@ namespace Infrastructure.Repositories
 {
     public class BookRepository : IRepository<Book>
     {
-        private readonly IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
+        private readonly IUnitOfWork _unitOfWork;
+        private IDbConnection _connection => _unitOfWork.Connection;
 
-        public BookRepository(IDbConnection connection, IDbTransaction transaction)
+        public BookRepository(IUnitOfWork unitOfWork)
         {
-            _connection = connection;
-            _transaction = transaction;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Book> GetByIdAsync(int id)

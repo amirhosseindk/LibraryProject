@@ -7,13 +7,12 @@ namespace Infrastructure.Repositories
 {
     public class CategoryRepository : IRepository<Category>
     {
-        private readonly IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
+        private readonly IUnitOfWork _unitOfWork;
+        private IDbConnection _connection => _unitOfWork.Connection;
 
-        public CategoryRepository(IDbConnection connection, IDbTransaction transaction)
+        public CategoryRepository(IUnitOfWork unitOfWork)
         {
-            _connection = connection;
-            _transaction = transaction;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Category> GetByIdAsync(int id)
