@@ -19,7 +19,16 @@ namespace Infrastructure.UnitOfWork
 
             if (_connection.State == ConnectionState.Closed)
             {
-                _connection.Open();
+                try
+                {
+                    _connection.Open();
+
+                }
+                catch (Exception ex)
+                {
+
+                    throw ex;
+                }
             }
 
             _transaction = _connection.BeginTransaction();
@@ -37,11 +46,24 @@ namespace Infrastructure.UnitOfWork
         public async Task SaveAsync()
         {
             _transaction.Commit();
+            _transaction.Dispose();
+            _transaction = _connection.BeginTransaction();
+        }
+
+        public void Rollback()
+        {
+            _transaction.Rollback();
+            _transaction.Dispose();
+            _transaction = _connection.BeginTransaction();
         }
 
         public void Dispose()
         {
-            _transaction?.Dispose();
+            if (_transaction != null)
+            {
+                _transaction.Rollback();
+                _transaction.Dispose();
+            }
             _connection?.Dispose();
         }
     }

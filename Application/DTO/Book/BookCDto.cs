@@ -8,6 +8,7 @@
         public string Publisher { get; set; }
         public decimal Price { get; set; }
         public string Summary { get; set; }
+        public double Score { get; set; }
         public DateTime PublishYear { get; set; }
     }
 }
