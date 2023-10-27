@@ -14,7 +14,12 @@ namespace Infrastructure.Database
 
         public IDbConnection CreateConnection()
         {
-            return new SqlConnection(_connectionString);
+            var connection = new SqlConnection(_connectionString);
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
+            return connection;
         }
     }
 }

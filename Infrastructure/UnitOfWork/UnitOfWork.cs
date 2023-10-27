@@ -16,6 +16,12 @@ namespace Infrastructure.UnitOfWork
         {
             _dbContext = dbContext;
             _connection = _dbContext.CreateConnection();
+
+            if (_connection.State == ConnectionState.Closed)
+            {
+                _connection.Open();
+            }
+
             _transaction = _connection.BeginTransaction();
         }
 

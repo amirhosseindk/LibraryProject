@@ -19,7 +19,7 @@ namespace Infrastructure.Services
             _inventoryService = inventoryService;
         }
 
-        public async Task CreateBook(BookCDto bookDto)
+        public async Task<int> CreateBook(BookCDto bookDto)
         {
             var existingBook = await _bookRepository.GetByNameAsync(bookDto.Name);
             if (existingBook != null)
@@ -40,6 +40,8 @@ namespace Infrastructure.Services
 
             await _bookRepository.AddAsync(book);
             await _unitOfWork.SaveAsync();
+
+            return book.ID;
         }
 
         public async Task UpdateBook(BookUDto bookDto)

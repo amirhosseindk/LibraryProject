@@ -4,7 +4,7 @@ namespace Application.UseCases.Book
 {
     public interface IBookService
     {
-        Task CreateBook(BookCDto bookDto);
+        Task<int> CreateBook(BookCDto bookDto);
         Task UpdateBook(BookUDto bookDto);
         Task DeleteBook(int bookId);
         Task<BookRDto> GetBookDetails(int bookId);
