@@ -13,5 +13,4 @@ namespace Application.UseCases.Book
         Task ReturnBook(int bookId, int userId);
         Task PurchaseBook(int bookId, int userId);
     }
-
 }

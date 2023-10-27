@@ -1,4 +1,5 @@
 ﻿using Application.DTO.User;
+using Domain.Entities;
 
 namespace Application.UseCases.User
 {
@@ -9,6 +10,6 @@ namespace Application.UseCases.User
         Task DeleteUser(int userId);
         Task<UserRDto> GetUserDetails(int userId);
         Task<IEnumerable<UserRDto>> ListUsers();
-        Task AssignUserRole(int userId, string roleDto);
+        Task AssignUserRole(int userId, UserRole role);
     }
 }
