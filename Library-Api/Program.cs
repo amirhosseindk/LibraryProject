@@ -8,6 +8,8 @@ using Infrastructure.Database;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.UnitOfWork;
+using Library_Api;
+using log4net.Config;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,11 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAuthorService,AuthorService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 
+builder.Logging.ClearProviders();
+XmlConfigurator.Configure(new FileInfo("log4net.config"));
+Environment.SetEnvironmentVariable("LogFileName", "app.log");
+
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -39,6 +46,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseAuthorization();
 
