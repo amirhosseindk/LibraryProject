@@ -17,7 +17,7 @@ namespace Infrastructure.Services
             _categoryRepository = _unitOfWork.CategoryRepository;
         }
 
-        public async Task CreateCategory(CategoryCDto categoryDto)
+        public async Task<int> CreateCategory(CategoryCDto categoryDto)
         {
             var category = new Category
             {
@@ -27,6 +27,8 @@ namespace Infrastructure.Services
 
             await _categoryRepository.AddAsync(category);
             await _unitOfWork.SaveAsync();
+
+            return category.ID;
         }
 
         public async Task UpdateCategory(CategoryUDto categoryDto)
@@ -68,12 +70,7 @@ namespace Infrastructure.Services
             {
                 ID = category.ID,
                 Name = category.Name,
-                Description = category.Description,
-                Books = category.Books.Select(b => new BookRDto
-                {
-                    ID = b.ID,
-                    Name = b.Name,
-                }).ToList()
+                Description = category.Description
             };
         }
 
@@ -89,12 +86,7 @@ namespace Infrastructure.Services
             {
                 ID = category.ID,
                 Name = category.Name,
-                Description = category.Description,
-                Books = category.Books.Select(b => new BookRDto
-                {
-                    ID = b.ID,
-                    Name = b.Name,
-                }).ToList()
+                Description = category.Description
             };
         }
 
@@ -105,12 +97,7 @@ namespace Infrastructure.Services
             {
                 ID = c.ID,
                 Name = c.Name,
-                Description = c.Description,
-                Books = c.Books.Select(b => new BookRDto
-                {
-                    ID = b.ID,
-                    Name = b.Name,
-                }).ToList()
+                Description = c.Description
             });
         }
     }

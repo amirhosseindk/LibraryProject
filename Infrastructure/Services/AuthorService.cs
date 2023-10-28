@@ -16,7 +16,7 @@ namespace Infrastructure.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task CreateAuthor(AuthorCDto authorDto)
+        public async Task<int> CreateAuthor(AuthorCDto authorDto)
         {
             var existingAuthor = await _authorRepository.GetByNameAsync(authorDto.LastName);
             if (existingAuthor != null)
@@ -32,6 +32,8 @@ namespace Infrastructure.Services
 
             await _authorRepository.AddAsync(author);
             await _unitOfWork.SaveAsync();
+
+            return author.ID;
         }
 
         public async Task UpdateAuthor(AuthorUDto authorDto)
@@ -64,6 +66,22 @@ namespace Infrastructure.Services
         public async Task<AuthorRDto> GetAuthorDetails(int authorId)
         {
             var author = await _authorRepository.GetByIdAsync(authorId);
+            if (author == null)
+            {
+                throw new Exception("Author not found.");
+            }
+
+            return new AuthorRDto
+            {
+                ID = author.ID,
+                FirstName = author.FirstName,
+                LastName = author.LastName
+            };
+        }
+
+        public async Task<AuthorRDto> GetAuthorDetails(string authorName)
+        {
+            var author = await _authorRepository.GetByNameAsync(authorName);
             if (author == null)
             {
                 throw new Exception("Author not found.");
