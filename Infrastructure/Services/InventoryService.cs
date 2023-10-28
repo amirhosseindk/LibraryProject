@@ -1,5 +1,4 @@
-﻿using Application.DTO.Book;
-using Application.DTO.Inventory;
+﻿using Application.DTO.Inventory;
 using Application.Patterns;
 using Application.UseCases.Inventory;
 using Domain.Entities;
@@ -43,11 +42,7 @@ namespace Infrastructure.Services
 
             return new InventoryRDto
             {
-                Book = new BookRDto
-                {
-                    ID = inventory.Book.ID,
-                    Name = inventory.Book.Name
-                },
+                BookId = bookId,
                 QuantityAvailable = inventory.QuantityAvailable,
                 QuantitySold = inventory.QuantitySold,
                 QuantityBorrowed = inventory.QuantityBorrowed
@@ -59,11 +54,7 @@ namespace Infrastructure.Services
             var inventories = await _inventoryRepository.GetAllAsync();
             return new List<InventoryRDto>(inventories.Select(inventory => new InventoryRDto
             {
-                Book = new BookRDto
-                {
-                    ID = inventory.Book.ID,
-                    Name = inventory.Book.Name
-                },
+                BookId = inventory.BookId,
                 QuantityAvailable = inventory.QuantityAvailable,
                 QuantitySold = inventory.QuantitySold,
                 QuantityBorrowed = inventory.QuantityBorrowed
@@ -99,6 +90,44 @@ namespace Infrastructure.Services
             }
 
             _inventoryRepository.Update(inventory);
+            await _unitOfWork.SaveAsync();
+        }
+
+        public async Task<int> CreateInventory(InventoryCDto inventoryCDto)
+        {
+            var bookId = inventoryCDto.BookId;
+
+            var existingInventory = await _inventoryRepository.GetByIdAsync(bookId);
+            if (existingInventory != null)
+            {
+                throw new Exception("Inventory for this book already exists.");
+            }
+            else
+            {
+                var newInventory = new Inventory
+                {
+                    BookId = bookId,
+                    QuantityAvailable = inventoryCDto.QuantityAvailable,
+                    QuantitySold = inventoryCDto.QuantitySold,
+                    QuantityBorrowed = inventoryCDto.QuantityBorrowed
+                };
+                await _inventoryRepository.AddAsync(newInventory);
+            }
+
+            await _unitOfWork.SaveAsync();
+
+            return bookId;
+        }
+
+        public async Task DeleteInventory(int bookId)
+        {
+            var inventory = await _inventoryRepository.GetByIdAsync(bookId);
+            if (inventory == null)
+            {
+                throw new Exception("Inventory not found.");
+            }
+
+            _inventoryRepository.Delete(inventory);
             await _unitOfWork.SaveAsync();
         }
     }

@@ -1,5 +1,4 @@
-﻿using Application.DTO.Book;
-using Application.DTO.Category;
+﻿using Application.DTO.Category;
 using Application.Patterns;
 using Application.UseCases.Category;
 using Domain.Entities;
