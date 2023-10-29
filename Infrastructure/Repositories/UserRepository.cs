@@ -9,6 +9,7 @@ namespace Infrastructure.Repositories
     {
         private readonly IUnitOfWork _unitOfWork;
         private IDbConnection _connection => _unitOfWork.Connection;
+        private IDbTransaction _transaction => _unitOfWork.Transaction;
 
         public UserRepository(IUnitOfWork unitOfWork)
         {
@@ -18,37 +19,37 @@ namespace Infrastructure.Repositories
         public async Task<User> GetByIdAsync(int id)
         {
             var query = "SELECT * FROM Users WHERE ID = @Id";
-            return await _connection.QuerySingleOrDefaultAsync<User>(query, new { Id = id });
+            return await _connection.QuerySingleOrDefaultAsync<User>(query, new { Id = id }, _transaction);
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()
         {
             var query = "SELECT * FROM Users";
-            return await _connection.QueryAsync<User>(query);
+            return await _connection.QueryAsync<User>(query, transaction: _transaction);
         }
 
         public async Task AddAsync(User user)
         {
-            var query = "INSERT INTO Users (FirstName, LastName, Email, Phone, Username, Password, Address, DateOfBirth) VALUES (@FirstName, @LastName, @Email, @Phone, @Username, @Password, @Address, @DateOfBirth)";
-            await _connection.ExecuteAsync(query, user);
+            var query = "INSERT INTO Users (FirstName, LastName, Email, Phone, Username, Password, Address, DateOfBirth, Role) VALUES (@FirstName, @LastName, @Email, @Phone, @Username, @Password, @Address, @DateOfBirth, @UserRole)";
+            await _connection.ExecuteAsync(query, user, _transaction);
         }
 
         public void Update(User user)
         {
-            var query = "UPDATE Users SET FirstName = @FirstName, LastName = @LastName, Email = @Email, Phone = @Phone, Username = @Username, Password = @Password, Address = @Address, DateOfBirth = @DateOfBirth WHERE ID = @ID";
-            _connection.Execute(query, user);
+            var query = "UPDATE Users SET FirstName = @FirstName, LastName = @LastName, Email = @Email, Phone = @Phone, Username = @Username, Password = @Password, Address = @Address, DateOfBirth = @DateOfBirth, Role = @UserRole WHERE ID = @ID";
+            _connection.Execute(query, user, _transaction);
         }
 
         public void Delete(User user)
         {
             var query = "DELETE FROM Users WHERE ID = @ID";
-            _connection.Execute(query, new { user.ID });
+            _connection.Execute(query, new { user.ID }, _transaction);
         }
 
-        public async Task<User> GetByNameAsync(string name)
+        public async Task<User> GetByNameAsync(string username)
         {
-            var query = "SELECT * FROM Users WHERE Name = @name";
-            return await _connection.QuerySingleOrDefaultAsync<User>(query, new { Name = name });
+            var query = "SELECT * FROM Users WHERE Username = @username";
+            return await _connection.QuerySingleOrDefaultAsync<User>(query, new { Username = username }, _transaction);
         }
     }
 }

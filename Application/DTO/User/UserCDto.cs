@@ -1,4 +1,6 @@
-﻿namespace Application.DTO.User
+﻿using Domain.Entities;
+
+namespace Application.DTO.User
 {
     public class UserCDto
     {
@@ -10,5 +12,6 @@
         public string Password { get; set; }
         public string Address { get; set; }
         public DateTime DateOfBirth { get; set; }
+        public UserRoles UserRole { get; set; }
     }
 }

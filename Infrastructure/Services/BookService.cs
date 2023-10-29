@@ -2,6 +2,7 @@
 using Application.Patterns;
 using Application.UseCases.Book;
 using Application.UseCases.Inventory;
+using Application.UseCases.User;
 using Domain.Entities;
 
 namespace Infrastructure.Services
@@ -11,12 +12,14 @@ namespace Infrastructure.Services
         private readonly IRepository<Book> _bookRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IInventoryService _inventoryService;
+        private readonly IUserService _userService;
 
-        public BookService(IUnitOfWork unitOfWork, IInventoryService inventoryService)
+        public BookService(IUnitOfWork unitOfWork, IInventoryService inventoryService, IUserService userService)
         {
             _unitOfWork = unitOfWork;
             _bookRepository = _unitOfWork.BookRepository;
             _inventoryService = inventoryService;
+            _userService = userService;
         }
 
         public async Task<int> CreateBook(BookCDto bookDto)
@@ -139,14 +142,22 @@ namespace Infrastructure.Services
 
         public async Task BorrowBook(int bookId, int userId)
         {
-            var inventory = await _inventoryService.GetInventoryDetailsByBookId(bookId);
-            if (inventory.QuantityAvailable <= 0)
+            var userRole = await _userService.GetUserRole(userId);
+            if (userRole == UserRoles.Customer)
             {
-                throw new Exception("No books available for borrowing.");
+                throw new Exception("Only members can borrow books.");
             }
+            else
+            {
+                var inventory = await _inventoryService.GetInventoryDetailsByBookId(bookId);
+                if (inventory.QuantityAvailable <= 0)
+                {
+                    throw new Exception("No books available for borrowing.");
+                }
 
-            await _inventoryService.DecreaseQuantityAvailable(bookId);
-            await _inventoryService.IncreaseQuantityBorrowed(bookId);
+                await _inventoryService.DecreaseQuantityAvailable(bookId);
+                await _inventoryService.IncreaseQuantityBorrowed(bookId);
+            }
         }
 
         public async Task ReturnBook(int bookId, int userId)
@@ -157,14 +168,22 @@ namespace Infrastructure.Services
 
         public async Task PurchaseBook(int bookId, int userId)
         {
-            var inventory = await _inventoryService.GetInventoryDetailsByBookId(bookId);
-            if (inventory.QuantityAvailable <= 0)
+            var userRole = await _userService.GetUserRole(userId);
+            if (userRole == UserRoles.Member)
             {
-                throw new Exception("No books available for purchase.");
+                throw new Exception("Only members can purchase books.");
             }
+            else
+            {
+                var inventory = await _inventoryService.GetInventoryDetailsByBookId(bookId);
+                if (inventory.QuantityAvailable <= 0)
+                {
+                    throw new Exception("No books available for purchase.");
+                }
 
-            await _inventoryService.DecreaseQuantityAvailable(bookId);
-            await _inventoryService.IncreaseQuantitySold(bookId);
+                await _inventoryService.DecreaseQuantityAvailable(bookId);
+                await _inventoryService.IncreaseQuantitySold(bookId);
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Application.DTO.User
+﻿using Domain.Entities;
+
+namespace Application.DTO.User
 {
     public class UserRDto
     {
@@ -8,6 +10,6 @@
         public string Phone { get; set; }
         public string Address { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public List<string> UserRoles { get; set; }
+        public UserRoles UserRole { get; set; }
     }
 }
