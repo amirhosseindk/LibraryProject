@@ -1,70 +1,33 @@
 ﻿using Application.Patterns;
-using Domain.Entities;
 using Infrastructure.Database;
-using Infrastructure.Repositories;
-using System.Data;
 
 namespace Infrastructure.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly DbContext _dbContext;
-        public IDbConnection _connection;
-        public IDbTransaction _transaction;
+        private readonly DbSession _session;
 
-        public UnitOfWork(DbContext dbContext)
+        public UnitOfWork(DbSession session)
         {
-            _dbContext = dbContext;
-            _connection = _dbContext.CreateConnection();
-
-            if (_connection.State == ConnectionState.Closed)
-            {
-                try
-                {
-                    _connection.Open();
-
-                }
-                catch (Exception ex)
-                {
-
-                    throw ex;
-                }
-            }
-
-            _transaction = _connection.BeginTransaction();
+            _session = session;
+        }
+        public void BeginTransaction()
+        {
+            _session.Transaction = _session.Connection.BeginTransaction();
         }
 
-        public IDbConnection Connection => _connection;
-        public IDbTransaction Transaction => _transaction;
-
-        public IRepository<User> UserRepository => new UserRepository(this);
-        public IRepository<Book> BookRepository => new BookRepository(this);
-        public IRepository<Author> AuthorRepository => new AuthorRepository(this);
-        public IRepository<Category> CategoryRepository => new CategoryRepository(this);
-        public IRepository<Inventory> InventoryRepository => new InventoryRepository(this);
-
-        public async Task SaveAsync()
+        public void Commit()
         {
-            _transaction.Commit();
-            _transaction.Dispose();
-            _transaction = _connection.BeginTransaction();
+            _session.Transaction.Commit();
+            Dispose();
         }
 
         public void Rollback()
         {
-            _transaction.Rollback();
-            _transaction.Dispose();
-            _transaction = _connection.BeginTransaction();
+            _session.Transaction.Rollback();
+            Dispose();
         }
 
-        public void Dispose()
-        {
-            if (_transaction != null)
-            {
-                _transaction.Rollback();
-                _transaction.Dispose();
-            }
-            _connection?.Dispose();
-        }
+        public void Dispose() => _session.Transaction?.Dispose();
     }
 }

@@ -7,10 +7,10 @@ namespace Infrastructure.Services
 {
     public class AuthorService : IAuthorService
     {
-        private readonly IRepository<Author> _authorRepository;
+        private readonly IAuthorRepository _authorRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AuthorService(IRepository<Author> authorRepository, IUnitOfWork unitOfWork)
+        public AuthorService(IAuthorRepository authorRepository, IUnitOfWork unitOfWork)
         {
             _authorRepository = authorRepository;
             _unitOfWork = unitOfWork;
@@ -18,49 +18,76 @@ namespace Infrastructure.Services
 
         public async Task<int> CreateAuthor(AuthorCDto authorDto)
         {
-            var existingAuthor = await _authorRepository.GetByNameAsync(authorDto.LastName);
-            if (existingAuthor != null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Author with this name already exists.");
+                var existingAuthor = await _authorRepository.GetByNameAsync(authorDto.LastName);
+                if (existingAuthor != null)
+                {
+                    throw new Exception("Author with this name already exists.");
+                }
+
+                var author = new Author
+                {
+                    FirstName = authorDto.FirstName,
+                    LastName = authorDto.LastName
+                };
+
+                await _authorRepository.AddAsync(author);
+                _unitOfWork.Commit();
+
+                return author.ID;
             }
-
-            var author = new Author
+            catch (Exception)
             {
-                FirstName = authorDto.FirstName,
-                LastName = authorDto.LastName
-            };
-
-            await _authorRepository.AddAsync(author);
-            await _unitOfWork.SaveAsync();
-
-            return author.ID;
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task UpdateAuthor(AuthorUDto authorDto)
         {
-            var existingAuthor = await _authorRepository.GetByIdAsync(authorDto.ID);
-            if (existingAuthor == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Author not found.");
+                var existingAuthor = await _authorRepository.GetByIdAsync(authorDto.ID);
+                if (existingAuthor == null)
+                {
+                    throw new Exception("Author not found.");
+                }
+
+                existingAuthor.FirstName = authorDto.FirstName;
+                existingAuthor.LastName = authorDto.LastName;
+
+                await _authorRepository.Update(existingAuthor);
+                _unitOfWork.Commit();
             }
-
-            existingAuthor.FirstName = authorDto.FirstName;
-            existingAuthor.LastName = authorDto.LastName;
-
-            _authorRepository.Update(existingAuthor);
-            await _unitOfWork.SaveAsync();
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task DeleteAuthor(int authorId)
         {
-            var existingAuthor = await _authorRepository.GetByIdAsync(authorId);
-            if (existingAuthor == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Author not found.");
-            }
+                var existingAuthor = await _authorRepository.GetByIdAsync(authorId);
+                if (existingAuthor == null)
+                {
+                    throw new Exception("Author not found.");
+                }
 
-            _authorRepository.Delete(existingAuthor);
-            await _unitOfWork.SaveAsync();
+                await _authorRepository.Delete(existingAuthor);
+                _unitOfWork.Commit();
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task<AuthorRDto> GetAuthorDetails(int authorId)

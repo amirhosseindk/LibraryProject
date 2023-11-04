@@ -4,25 +4,36 @@ using Application.UseCases.Book;
 using Application.UseCases.Category;
 using Application.UseCases.Inventory;
 using Application.UseCases.User;
-using Domain.Entities;
 using Infrastructure.Database;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.UnitOfWork;
 using Library_Api;
 using log4net.Config;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddSingleton(new DbContext(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<DbSession>(provider =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var dbSession = new DbSession(connectionString);
+    return dbSession;
+});
+
+builder.Services.AddScoped<IDbConnection>(provider =>
+    provider.GetRequiredService<DbSession>().Connection
+);
+
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IRepository<Book>, BookRepository>();
-builder.Services.AddScoped<IRepository<Inventory>, InventoryRepository>();
-builder.Services.AddScoped<IRepository<Author>, AuthorRepository>();
-builder.Services.AddScoped<IRepository<Category>, CategoryRepository>();
-builder.Services.AddScoped<IRepository<User>, UserRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBookService,BookService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAuthorService,AuthorService>();

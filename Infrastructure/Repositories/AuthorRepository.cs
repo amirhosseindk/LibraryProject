@@ -5,51 +5,49 @@ using System.Data;
 
 namespace Infrastructure.Repositories
 {
-    public class AuthorRepository : IRepository<Author>
+    public class AuthorRepository : IAuthorRepository
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private IDbConnection _connection => _unitOfWork.Connection;
-        private IDbTransaction _transaction => _unitOfWork.Transaction;
+        private IDbConnection _connection;
 
-        public AuthorRepository(IUnitOfWork unitOfWork)
+        public AuthorRepository(IDbConnection dbConnection)
         {
-            _unitOfWork = unitOfWork;
+            _connection = dbConnection;
         }
 
         public async Task<Author> GetByIdAsync(int id)
         {
             var query = "SELECT * FROM Authors WHERE ID = @Id";
-            return await _connection.QuerySingleOrDefaultAsync<Author>(query, new { Id = id }, _transaction);
+            return await _connection.QuerySingleOrDefaultAsync<Author>(query, new { Id = id });
         }
 
         public async Task<Author> GetByNameAsync(string lastName)
         {
             var query = "SELECT * FROM Authors WHERE LastName = @LastName";
-            return await _connection.QuerySingleOrDefaultAsync<Author>(query, new { LastName = lastName }, _transaction);
+            return await _connection.QuerySingleOrDefaultAsync<Author>(query, new { LastName = lastName });
         }
 
         public async Task<IEnumerable<Author>> GetAllAsync()
         {
             var query = "SELECT * FROM Authors";
-            return await _connection.QueryAsync<Author>(query, transaction: _transaction);
+            return await _connection.QueryAsync<Author>(query);
         }
 
         public async Task AddAsync(Author author)
         {
             var query = "INSERT INTO Authors (FirstName, LastName) VALUES (@FirstName, @LastName)";
-            await _connection.ExecuteAsync(query, author, _transaction);
+            await _connection.ExecuteAsync(query, author);
         }
 
-        public void Update(Author author)
+        public async Task Update(Author author)
         {
             var query = "UPDATE Authors SET FirstName = @FirstName, LastName = @LastName WHERE ID = @ID";
-            _connection.Execute(query, author, _transaction);
+            _connection.Execute(query, author);
         }
 
-        public void Delete(Author author)
+        public async Task Delete(Author author)
         {
             var query = "DELETE FROM Authors WHERE ID = @ID";
-            _connection.Execute(query, new { author.ID }, _transaction);
+            _connection.Execute(query, new { author.ID });
         }
     }
 }

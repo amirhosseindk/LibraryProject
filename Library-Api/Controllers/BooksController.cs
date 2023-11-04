@@ -65,27 +65,5 @@ namespace Library_Api.Controllers
             await _bookService.DeleteBook(id);
             return NoContent();
         }
-
-        [HttpPost("{id}/borrow/{userId}")]
-        public async Task<IActionResult> Borrow(int id, int userId)
-        {
-            await _bookService.BorrowBook(id, userId);
-            return NoContent();
-        }
-
-        [HttpPost("{id}/return/{userId}")]
-        public async Task<IActionResult> Return(int id, int userId)
-        {
-            await _bookService.ReturnBook(id, userId);
-            return NoContent();
-
-        }
-
-        [HttpPost("{id}/purchase/{userId}")]
-        public async Task<IActionResult> Purchase(int id, int userId)
-        {
-            await _bookService.PurchaseBook(id, userId);
-            return NoContent();
-        }
     }
 }

@@ -7,54 +7,83 @@ namespace Infrastructure.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly IRepository<Category> _categoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryService(IUnitOfWork unitOfWork)
+        public CategoryService(IUnitOfWork unitOfWork, ICategoryRepository categoryRepository)
         {
             _unitOfWork = unitOfWork;
-            _categoryRepository = _unitOfWork.CategoryRepository;
+            _categoryRepository = categoryRepository;
         }
 
         public async Task<int> CreateCategory(CategoryCDto categoryDto)
         {
-            var category = new Category
+            _unitOfWork.BeginTransaction();
+            try
             {
-                Name = categoryDto.Name,
-                Description = categoryDto.Description
-            };
+                var category = new Category
+                {
+                    Name = categoryDto.Name,
+                    Description = categoryDto.Description
+                };
 
-            await _categoryRepository.AddAsync(category);
-            await _unitOfWork.SaveAsync();
+                await _categoryRepository.AddAsync(category);
+                _unitOfWork.Commit();
 
-            return category.ID;
+                return category.ID;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
+
         }
 
         public async Task UpdateCategory(CategoryUDto categoryDto)
         {
-            var category = await _categoryRepository.GetByIdAsync(categoryDto.ID);
-            if (category == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Category not found.");
+                var category = await _categoryRepository.GetByIdAsync(categoryDto.ID);
+                if (category == null)
+                {
+                    throw new Exception("Category not found.");
+                }
+
+                category.Name = categoryDto.Name;
+                category.Description = categoryDto.Description;
+
+                _categoryRepository.Update(category);
+                _unitOfWork.Commit();
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
             }
 
-            category.Name = categoryDto.Name;
-            category.Description = categoryDto.Description;
-
-            _categoryRepository.Update(category);
-            await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteCategory(int categoryId)
         {
-            var category = await _categoryRepository.GetByIdAsync(categoryId);
-            if (category == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Category not found.");
-            }
+                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                {
+                    throw new Exception("Category not found.");
+                }
 
-            _categoryRepository.Delete(category);
-            await _unitOfWork.SaveAsync();
+                _categoryRepository.Delete(category);
+                _unitOfWork.Commit();
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task<CategoryRDto> GetCategoryDetails(int categoryId)

@@ -10,8 +10,5 @@ namespace Application.UseCases.Book
         Task<BookRDto> GetBookDetails(int bookId);
         Task<BookRDto> GetBookDetails(string bookName);
         Task<IEnumerable<BookRDto>> ListBooks();
-        Task BorrowBook(int bookId, int userId);
-        Task ReturnBook(int bookId, int userId);
-        Task PurchaseBook(int bookId, int userId);
     }
 }

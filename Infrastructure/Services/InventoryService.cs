@@ -7,29 +7,39 @@ namespace Infrastructure.Services
 {
     public class InventoryService : IInventoryService
     {
-        private readonly IRepository<Inventory> _inventoryRepository;
+        private readonly IInventoryRepository _inventoryRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public InventoryService(IUnitOfWork unitOfWork)
+        public InventoryService(IUnitOfWork unitOfWork, IInventoryRepository inventoryRepository)
         {
             _unitOfWork = unitOfWork;
-            _inventoryRepository = _unitOfWork.InventoryRepository;
+            _inventoryRepository = inventoryRepository;
         }
 
         public async Task UpdateInventory(InventoryUDto inventoryDto)
         {
-            var inventory = await _inventoryRepository.GetByIdAsync(inventoryDto.BookId);
-            if (inventory == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Inventory not found.");
+                var inventory = await _inventoryRepository.GetByIdAsync(inventoryDto.BookId);
+                if (inventory == null)
+                {
+                    throw new Exception("Inventory not found.");
+                }
+
+                inventory.QuantityAvailable = inventoryDto.QuantityAvailable;
+                inventory.QuantitySold = inventoryDto.QuantitySold;
+                inventory.QuantityBorrowed = inventoryDto.QuantityBorrowed;
+
+                _inventoryRepository.Update(inventory);
+                _unitOfWork.Commit();
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
             }
 
-            inventory.QuantityAvailable = inventoryDto.QuantityAvailable;
-            inventory.QuantitySold = inventoryDto.QuantitySold;
-            inventory.QuantityBorrowed = inventoryDto.QuantityBorrowed;
-
-            _inventoryRepository.Update(inventory);
-            await _unitOfWork.SaveAsync();
         }
 
         public async Task<InventoryRDto> GetInventoryDetailsByBookId(int bookId)
@@ -70,65 +80,89 @@ namespace Infrastructure.Services
 
         private async Task UpdateQuantity(int bookId, string type, bool increase)
         {
-            var inventory = await _inventoryRepository.GetByIdAsync(bookId);
-            if (inventory == null)
+            try
             {
-                throw new Exception("Inventory not found.");
-            }
+                _unitOfWork.BeginTransaction();
+                var inventory = await _inventoryRepository.GetByIdAsync(bookId);
+                if (inventory == null)
+                {
+                    throw new Exception("Inventory not found.");
+                }
 
-            switch (type)
+                switch (type)
+                {
+                    case "available":
+                        inventory.QuantityAvailable += increase ? 1 : -1;
+                        break;
+                    case "sold":
+                        inventory.QuantitySold += increase ? 1 : -1;
+                        break;
+                    case "borrowed":
+                        inventory.QuantityBorrowed += increase ? 1 : -1;
+                        break;
+                }
+
+                _inventoryRepository.Update(inventory);
+                _unitOfWork.Commit();
+            }
+            catch (Exception)
             {
-                case "available":
-                    inventory.QuantityAvailable += increase ? 1 : -1;
-                    break;
-                case "sold":
-                    inventory.QuantitySold += increase ? 1 : -1;
-                    break;
-                case "borrowed":
-                    inventory.QuantityBorrowed += increase ? 1 : -1;
-                    break;
+                _unitOfWork.Rollback();
+                throw;
             }
-
-            _inventoryRepository.Update(inventory);
-            await _unitOfWork.SaveAsync();
         }
 
         public async Task<int> CreateInventory(InventoryCDto inventoryCDto)
         {
-            var bookId = inventoryCDto.BookId;
-
-            var existingInventory = await _inventoryRepository.GetByIdAsync(bookId);
-            if (existingInventory != null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Inventory for this book already exists.");
-            }
-            else
-            {
-                var newInventory = new Inventory
+                var bookId = inventoryCDto.BookId;
+                var existingInventory = await _inventoryRepository.GetByIdAsync(bookId);
+                if (existingInventory != null)
                 {
-                    BookId = bookId,
-                    QuantityAvailable = inventoryCDto.QuantityAvailable,
-                    QuantitySold = inventoryCDto.QuantitySold,
-                    QuantityBorrowed = inventoryCDto.QuantityBorrowed
-                };
-                await _inventoryRepository.AddAsync(newInventory);
+                    throw new Exception("Inventory for this book already exists.");
+                }
+                else
+                {
+                    var newInventory = new Inventory
+                    {
+                        BookId = bookId,
+                        QuantityAvailable = inventoryCDto.QuantityAvailable,
+                        QuantitySold = inventoryCDto.QuantitySold,
+                        QuantityBorrowed = inventoryCDto.QuantityBorrowed
+                    };
+                    await _inventoryRepository.AddAsync(newInventory);
+                }
+                _unitOfWork.Commit();
+                return bookId;
             }
-
-            await _unitOfWork.SaveAsync();
-
-            return bookId;
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task DeleteInventory(int bookId)
         {
-            var inventory = await _inventoryRepository.GetByIdAsync(bookId);
-            if (inventory == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("Inventory not found.");
-            }
+                var inventory = await _inventoryRepository.GetByIdAsync(bookId);
+                if (inventory == null)
+                {
+                    throw new Exception("Inventory not found.");
+                }
 
-            _inventoryRepository.Delete(inventory);
-            await _unitOfWork.SaveAsync();
+                _inventoryRepository.Delete(inventory);
+                _unitOfWork.Commit();
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
     }
 }

@@ -7,10 +7,10 @@ namespace Infrastructure.Services
 {
     public class UserService : IUserService
     {
-        private readonly IRepository<User> _userRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(IRepository<User> userRepository, IUnitOfWork unitOfWork)
+        public UserService(IUserRepository userRepository, IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
@@ -18,14 +18,23 @@ namespace Infrastructure.Services
 
         public async Task DeleteUser(int userId)
         {
-            var existingUser = await _userRepository.GetByIdAsync(userId);
-            if (existingUser == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("User not found.");
-            }
+                var existingUser = await _userRepository.GetByIdAsync(userId);
+                if (existingUser == null)
+                {
+                    throw new Exception("User not found.");
+                }
 
-            _userRepository.Delete(existingUser);
-            await _unitOfWork.SaveAsync();
+                _userRepository.Delete(existingUser.ID);
+                _unitOfWork.Commit();
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task<UserRDto> GetUserDetails(int userId)
@@ -65,52 +74,70 @@ namespace Infrastructure.Services
 
         public async Task<int> RegisterUser(UserCDto userDto)
         {
-            var existingUser = await _userRepository.GetByNameAsync(userDto.Username);
-            if (existingUser != null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("User with this Username already exists.");
+                var existingUser = await _userRepository.GetByNameAsync(userDto.Username);
+                if (existingUser != null)
+                {
+                    throw new Exception("User with this Username already exists.");
+                }
+
+                var user = new User
+                {
+                    FirstName = userDto.FirstName,
+                    LastName = userDto.LastName,
+                    Username = userDto.Username,
+                    Password = userDto.Password,
+                    Email = userDto.Email,
+                    Address = userDto.Address,
+                    DateOfBirth = userDto.DateOfBirth,
+                    Phone = userDto.Phone,
+                    Role = userDto.UserRole
+                };
+
+                await _userRepository.AddAsync(user);
+                _unitOfWork.Commit();
+
+                return user.ID;
             }
-
-            var user = new User
+            catch (Exception)
             {
-                FirstName = userDto.FirstName,
-                LastName = userDto.LastName,
-                Username = userDto.Username,
-                Password = userDto.Password,
-                Email = userDto.Email,
-                Address = userDto.Address,
-                DateOfBirth = userDto.DateOfBirth,
-                Phone = userDto.Phone,
-                Role = userDto.UserRole
-            };
-
-            await _userRepository.AddAsync(user);
-            await _unitOfWork.SaveAsync();
-
-            return user.ID;
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task UpdateUser(UserUDto userDto)
         {
-            var existingUser = await _userRepository.GetByIdAsync(userDto.ID);
-
-            if (existingUser == null)
+            _unitOfWork.BeginTransaction();
+            try
             {
-                throw new Exception("User not found.");
+                var existingUser = await _userRepository.GetByIdAsync(userDto.ID);
+
+                if (existingUser == null)
+                {
+                    throw new Exception("User not found.");
+                }
+
+                existingUser.FirstName = userDto.FirstName;
+                existingUser.LastName = userDto.LastName;
+                existingUser.Username = userDto.Username;
+                existingUser.Password = userDto.Password;
+                existingUser.Email = userDto.Email;
+                existingUser.Address = userDto.Address;
+                existingUser.DateOfBirth = userDto.DateOfBirth;
+                existingUser.Phone = userDto.Phone;
+                existingUser.Role = userDto.UserRole;
+
+                _userRepository.Update(existingUser);
+                _unitOfWork.Commit();
             }
-
-            existingUser.FirstName = userDto.FirstName;
-            existingUser.LastName = userDto.LastName;
-            existingUser.Username = userDto.Username;
-            existingUser.Password = userDto.Password;
-            existingUser.Email = userDto.Email;
-            existingUser.Address = userDto.Address;
-            existingUser.DateOfBirth = userDto.DateOfBirth;
-            existingUser.Phone = userDto.Phone;
-            existingUser.Role = userDto.UserRole;
-
-            _userRepository.Update(existingUser);
-            await _unitOfWork.SaveAsync();
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task<UserRoles> GetUserRole(int userId)
