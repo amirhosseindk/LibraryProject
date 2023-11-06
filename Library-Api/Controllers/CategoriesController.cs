@@ -1,5 +1,6 @@
-﻿using Application.DTO.Category;
-using Application.UseCases.Category;
+﻿using Application.Commands.Category;
+using Application.Query.Category;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library_Api.Controllers
@@ -8,24 +9,29 @@ namespace Library_Api.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly ICategoryService _categoryService;
+        private readonly ISender _sender;
 
-        public CategoriesController(ICategoryService categoryService)
+        public CategoriesController(ISender sender)
         {
-            _categoryService = categoryService;
+            _sender = sender;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var categories = await _categoryService.ListCategories();
+            var categories = await _sender.Send(new GetCategoriesQuery());
+
+            if (categories == null)
+                return NotFound();
+
             return Ok(categories);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var category = await _categoryService.GetCategoryDetails(id);
+            var category = await _sender.Send(new GetCategoryQuery(id));
+
             if (category == null)
                 return NotFound();
 
@@ -35,7 +41,8 @@ namespace Library_Api.Controllers
         [HttpGet("name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
-            var category = await _categoryService.GetCategoryDetails(name);
+            var category = await _sender.Send(new GetCategoryQuery(0,name));
+
             if (category == null)
                 return NotFound();
 
@@ -43,26 +50,26 @@ namespace Library_Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CategoryCDto categoryCDto)
+        public async Task<IActionResult> Create(CreateCategoryCommand command)
         {
-            int newCategoryid = await _categoryService.CreateCategory(categoryCDto);
-            return CreatedAtAction(nameof(GetById), new { id = newCategoryid }, categoryCDto);
+            var newCategoryId = await _sender.Send(command);
+            return CreatedAtAction(nameof(GetById), new { id = newCategoryId }, command);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CategoryUDto categoryUDto)
+        public async Task<IActionResult> Update(int id, UpdateCategoryCommand command)
         {
-            if (id != categoryUDto.ID)
+            if (id != command.CategoryDto.ID)
                 return BadRequest();
 
-            await _categoryService.UpdateCategory(categoryUDto);
+            await _sender.Send(command);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _categoryService.DeleteCategory(id);
+            await _sender.Send(new DeleteCategoryCommand(id));
             return NoContent();
         }
     }

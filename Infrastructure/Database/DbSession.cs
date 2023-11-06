@@ -16,7 +16,6 @@ namespace Infrastructure.Database
             Connection.Open();
         }
 
-
         public void Dispose() => Connection?.Dispose();
     }
 }

@@ -1,3 +1,4 @@
+using Application.Commands.Book;
 using Application.Patterns;
 using Application.UseCases.Author;
 using Application.UseCases.Book;
@@ -8,13 +9,17 @@ using Infrastructure.Database;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.UnitOfWork;
-using Library_Api;
-using log4net.Config;
 using System.Data;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services to the container.   
+
+builder.Services.AddMediatR(cfg => {
+    cfg.RegisterServicesFromAssembly(Assembly.GetAssembly(typeof(CreateBookCommandHandler)));
+});
+
 
 builder.Services.AddScoped<DbSession>(provider =>
 {
@@ -40,13 +45,12 @@ builder.Services.AddScoped<IAuthorService,AuthorService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Logging.ClearProviders();
-XmlConfigurator.Configure(new FileInfo("log4net.config"));
-Environment.SetEnvironmentVariable("LogFileName", "app.log");
+//builder.Logging.ClearProviders();
+//XmlConfigurator.Configure(new FileInfo("log4net.config"));
+//Environment.SetEnvironmentVariable("LogFileName", "app.log");
 
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -61,7 +65,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
+//app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseAuthorization();
 

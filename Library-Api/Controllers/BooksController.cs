@@ -1,5 +1,6 @@
-﻿using Application.DTO.Book;
-using Application.UseCases.Book;
+﻿using Application.Commands.Book;
+using Application.Query.Book;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library_Api.Controllers
@@ -8,24 +9,29 @@ namespace Library_Api.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly IBookService _bookService;
+        private readonly ISender _sender;
 
-        public BooksController(IBookService bookService)
+        public BooksController(ISender sender)
         {
-            _bookService = bookService;
+            _sender = sender;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var books = await _bookService.ListBooks();
+            var books = await _sender.Send(new GetBooksQuery());
+
+            if (books == null)
+                return NotFound();
+
             return Ok(books);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var book = await _bookService.GetBookDetails(id);
+            var book = await _sender.Send(new GetBookQuery(id));
+
             if (book == null)
                 return NotFound();
 
@@ -35,7 +41,8 @@ namespace Library_Api.Controllers
         [HttpGet("name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
-            var book = await _bookService.GetBookDetails(name);
+            var book = await _sender.Send(new GetBookQuery(0,name));
+
             if (book == null)
                 return NotFound();
 
@@ -43,26 +50,26 @@ namespace Library_Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] BookCDto bookDto)
+        public async Task<IActionResult> Create(CreateBookCommand request)
         {
-            int newBookId = await _bookService.CreateBook(bookDto);
-            return CreatedAtAction(nameof(GetById), new { id = newBookId }, bookDto);
+            int newBookId = await _sender.Send(request);
+            return CreatedAtAction(nameof(GetById), new { id = newBookId }, request);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] BookUDto bookDto)
+        public async Task<IActionResult> Update(int id, UpdateBookCommand request)
         {
-            if (id != bookDto.ID)
+            if (id != request.BookDto.ID)
                 return BadRequest();
 
-            await _bookService.UpdateBook(bookDto);
+            await _sender.Send(request);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _bookService.DeleteBook(id);
+            await _sender.Send(new DeleteBookCommand(id));
             return NoContent();
         }
     }

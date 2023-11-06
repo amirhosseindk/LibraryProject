@@ -1,5 +1,6 @@
-﻿using Application.DTO.Author;
-using Application.UseCases.Author;
+﻿using Application.Commands.Author;
+using Application.Query.Author;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Library_Api.Controllers
@@ -8,61 +9,73 @@ namespace Library_Api.Controllers
     [ApiController]
     public class AuthorsController : ControllerBase
     {
-        private readonly IAuthorService _authorService;
+        private readonly ISender _sender;
 
-        public AuthorsController(IAuthorService authorService)
+        public AuthorsController(ISender sender)
         {
-            _authorService = authorService;
+            _sender = sender;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var authors = await _authorService.ListAuthors();
+            var authors = await _sender.Send(new GetAuthorsQuery());
+
+            if (authors == null)
+            {
+                return NotFound();
+            }
+
             return Ok(authors);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var author = await _authorService.GetAuthorDetails(id);
-            if (author == null)
-                return NotFound();
+            var authors = await _sender.Send(new GetAuthorQuery(id));
 
-            return Ok(author);
+            if (authors == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(authors);
         }
 
         [HttpGet("name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
-            var author = await _authorService.GetAuthorDetails(name);
-            if (author == null)
-                return NotFound();
+            var authors = await _sender.Send(new GetAuthorQuery(0,name));
 
-            return Ok(author);
+            if (authors == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(authors);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] AuthorCDto authorCDto)
+        public async Task<IActionResult> Create(CreateAuthorCommand request)
         {
-            int newAuthorId = await _authorService.CreateAuthor(authorCDto);
-            return CreatedAtAction(nameof(GetById), new { id = newAuthorId }, authorCDto);
+            int newAuthorId = await _sender.Send(request);
+            return CreatedAtAction(nameof(GetById), new { id = newAuthorId }, request);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] AuthorUDto authorUDto)
+        public async Task<IActionResult> Update(int id, UpdateAuthorCommand request)
         {
-            if (id != authorUDto.ID)
+            if (id != request.AuthorDto.ID)
                 return BadRequest();
 
-            await _authorService.UpdateAuthor(authorUDto);
+            await _sender.Send(request);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _authorService.DeleteAuthor(id);
+            await _sender.Send(new DeleteAuthorCommand(id));
             return NoContent();
         }
     }

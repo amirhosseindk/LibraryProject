@@ -2,17 +2,20 @@
 using Application.Patterns;
 using Dapper;
 using Domain.Entities;
+using Infrastructure.Database;
 using System.Data;
 
 namespace Infrastructure.Repositories
 {
     public class BookRepository : IBookRepository
     {
-        private IDbConnection _connection;
+        //private IDbConnection _connection;
+        private readonly DbSession _session;
 
-        public BookRepository(IDbConnection dbConnection)
+        public BookRepository(/*IDbConnection dbConnection*/DbSession session)
         {
-            _connection = dbConnection;
+            //_connection = dbConnection;
+            _session = session;
         }
 
         public async Task<Book> GetByIdAsync(int id)
@@ -25,7 +28,7 @@ namespace Infrastructure.Repositories
                 LEFT JOIN Authors a ON b.AuthorID = a.ID
                 LEFT JOIN Categories c ON b.CategoryID = c.ID
                 WHERE b.ID = @Id";
-            var result = await _connection.QuerySingleOrDefaultAsync<BookRDto>(query, new { Id = id });
+            var result = await _session.Connection.QuerySingleOrDefaultAsync<BookRDto>(query, new { Id = id },_session.Transaction);
             var book = new Book
             {
                 ID = result.ID,
@@ -51,7 +54,7 @@ namespace Infrastructure.Repositories
                 LEFT JOIN Authors a ON b.AuthorID = a.ID
                 LEFT JOIN Categories c ON b.CategoryID = c.ID
                 WHERE b.Name = @Name";
-            var result = await _connection.QuerySingleOrDefaultAsync<BookRDto>(query, new { Name = name });
+            var result = await _session.Connection.QuerySingleOrDefaultAsync<BookRDto>(query, new { Name = name }, _session.Transaction);
 
             if (result == null)
             {
@@ -92,7 +95,7 @@ namespace Infrastructure.Repositories
                 FROM Books b
                 LEFT JOIN Authors a ON b.AuthorID = a.ID
                 LEFT JOIN Categories c ON b.CategoryID = c.ID";
-            var results = await _connection.QueryAsync<BookRDto>(query);
+            var results = await _session.Connection.QueryAsync<BookRDto>(query, _session.Transaction);
             var books = results.Select(result => new Book
             {
                 ID = result.ID,
@@ -122,7 +125,7 @@ namespace Infrastructure.Repositories
                 Summary = book.Summary,
                 PublishYear = book.PublishYear
             };
-            await _connection.ExecuteAsync(query);
+            await _session.Connection.ExecuteAsync(query, parameters, _session.Transaction);
         }
 
         public async Task Update(Book book)
@@ -140,13 +143,13 @@ namespace Infrastructure.Repositories
                 Score = book.Score,
                 PublishYear = book.PublishYear
             };
-            _connection.Execute(query);
+            _session.Connection.Execute(query, parameters, _session.Transaction);
         }
 
         public async Task Delete(Book book)
         {
             var query = "DELETE FROM Books WHERE ID = @ID";
-            _connection.Execute(query, new { book.ID });
+            _session.Connection.Execute(query, new { book.ID }, _session.Transaction);
         }
     }
 }
