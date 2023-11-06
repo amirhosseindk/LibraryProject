@@ -14,7 +14,7 @@ namespace Application.Commands.Category
 
         public async Task<int> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
         {
-            return await _categoryService.CreateCategory(request.CategoryDto);
+            return await _categoryService.CreateCategory(request.CategoryDto,cancellationToken);
         }
     }
 }

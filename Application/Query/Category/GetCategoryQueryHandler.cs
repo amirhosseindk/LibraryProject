@@ -17,11 +17,11 @@ namespace Application.Query.Category
         {
             if (request.ID != 0 && request.Name == null)
             {
-                return await _categoryService.GetCategoryDetails(request.ID);
+                return await _categoryService.GetCategoryDetails(request.ID,cancellationToken);
             }
             else if (request.Name != null && request.ID == 0)
             {
-                return await _categoryService.GetCategoryDetails(request.Name);
+                return await _categoryService.GetCategoryDetails(request.Name,cancellationToken);
             }
             else
             {

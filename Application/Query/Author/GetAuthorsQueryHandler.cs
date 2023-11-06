@@ -12,10 +12,9 @@ namespace Application.Query.Author
             _authorService = authorService;
         }
 
-        public Task<IEnumerable<AuthorRDto>> Handle(GetAuthorsQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<AuthorRDto>> Handle(GetAuthorsQuery request, CancellationToken cancellationToken)
         {
-            var res = _authorService.ListAuthors();
-            return res;
+           return await _authorService.ListAuthors(cancellationToken);
         }
     }
 }

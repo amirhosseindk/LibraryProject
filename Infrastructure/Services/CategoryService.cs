@@ -16,7 +16,7 @@ namespace Infrastructure.Services
             _categoryRepository = categoryRepository;
         }
 
-        public async Task<int> CreateCategory(CategoryCDto categoryDto)
+        public async Task<int> CreateCategory(CategoryCDto categoryDto,CancellationToken cancellationToken)
         {
             _unitOfWork.BeginTransaction();
             try
@@ -27,7 +27,7 @@ namespace Infrastructure.Services
                     Description = categoryDto.Description
                 };
 
-                await _categoryRepository.AddAsync(category);
+                await _categoryRepository.AddAsync(category,cancellationToken);
                 _unitOfWork.Commit();
 
                 return category.ID;
@@ -40,12 +40,12 @@ namespace Infrastructure.Services
 
         }
 
-        public async Task UpdateCategory(CategoryUDto categoryDto)
+        public async Task UpdateCategory(CategoryUDto categoryDto, CancellationToken cancellationToken)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var category = await _categoryRepository.GetByIdAsync(categoryDto.ID);
+                var category = await _categoryRepository.GetByIdAsync(categoryDto.ID,cancellationToken);
                 if (category == null)
                 {
                     throw new Exception("Category not found.");
@@ -54,7 +54,7 @@ namespace Infrastructure.Services
                 category.Name = categoryDto.Name;
                 category.Description = categoryDto.Description;
 
-                _categoryRepository.Update(category);
+                _categoryRepository.UpdateAsync(category,cancellationToken);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -65,18 +65,18 @@ namespace Infrastructure.Services
 
         }
 
-        public async Task DeleteCategory(int categoryId)
+        public async Task DeleteCategory(int categoryId,CancellationToken cancellationToken)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                var category = await _categoryRepository.GetByIdAsync(categoryId, cancellationToken);
                 if (category == null)
                 {
                     throw new Exception("Category not found.");
                 }
 
-                _categoryRepository.Delete(category);
+                _categoryRepository.DeleteAsync(category,cancellationToken);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -86,9 +86,9 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task<CategoryRDto> GetCategoryDetails(int categoryId)
+        public async Task<CategoryRDto> GetCategoryDetails(int categoryId, CancellationToken cancellationToken)
         {
-            var category = await _categoryRepository.GetByIdAsync(categoryId);
+            var category = await _categoryRepository.GetByIdAsync(categoryId, cancellationToken);
             if (category == null)
             {
                 throw new Exception("Category not found.");
@@ -102,9 +102,9 @@ namespace Infrastructure.Services
             };
         }
 
-        public async Task<CategoryRDto> GetCategoryDetails(string name)
+        public async Task<CategoryRDto> GetCategoryDetails(string name,CancellationToken cancellationToken)
         {
-            var category = await _categoryRepository.GetByNameAsync(name);
+            var category = await _categoryRepository.GetByNameAsync(name, cancellationToken);
             if (category == null)
             {
                 throw new Exception("Category not found.");
@@ -118,9 +118,9 @@ namespace Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<CategoryRDto>> ListCategories()
+        public async Task<IEnumerable<CategoryRDto>> ListCategories(CancellationToken cancellationToken)
         {
-            var categories = await _categoryRepository.GetAllAsync();
+            var categories = await _categoryRepository.GetAllAsync(cancellationToken);
             return categories.Select(c => new CategoryRDto
             {
                 ID = c.ID,

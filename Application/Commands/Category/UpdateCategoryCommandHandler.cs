@@ -14,7 +14,7 @@ namespace Application.Commands.Category
 
         public async Task<Unit> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
         {
-            await _categoryService.UpdateCategory(request.CategoryDto);
+            await _categoryService.UpdateCategory(request.CategoryDto, cancellationToken);
             return Unit.Value;
         }
     }

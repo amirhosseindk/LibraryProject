@@ -5,7 +5,7 @@ using Domain.Entities;
 
 namespace Infrastructure.Services
 {
-    public class BookService : IBookService
+	public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -16,12 +16,12 @@ namespace Infrastructure.Services
             _bookRepository = bookRepository;
         }
 
-        public async Task<int> CreateBook(BookCDto bookDto)
+        public async Task<int> CreateBook(BookCDto bookDto, CancellationToken cancellationToken)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingBook = await _bookRepository.GetByNameAsync(bookDto.Name);
+                var existingBook = await _bookRepository.GetByNameAsync(bookDto.Name,cancellationToken);
                 if (existingBook != null)
                 {
                     throw new Exception("Book with this name already exists.");
@@ -50,12 +50,12 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task UpdateBook(BookUDto bookDto)
+        public async Task UpdateBook(BookUDto bookDto, CancellationToken cancellationToken)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingBook = await _bookRepository.GetByIdAsync(bookDto.ID);
+                var existingBook = await _bookRepository.GetByIdAsync(bookDto.ID,cancellationToken);
                 if (existingBook == null)
                 {
                     throw new Exception("Book not found.");
@@ -79,18 +79,18 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task DeleteBook(int bookId)
+        public async Task DeleteBook(int bookId, CancellationToken cancellationToken)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingBook = await _bookRepository.GetByIdAsync(bookId);
+                var existingBook = await _bookRepository.GetByIdAsync(bookId,cancellationToken);
                 if (existingBook == null)
                 {
                     throw new Exception("Book not found.");
                 }
 
-                _bookRepository.Delete(existingBook);
+                await _bookRepository.Delete(existingBook);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -100,9 +100,9 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task<BookRDto> GetBookDetails(int bookId)
+        public async Task<BookRDto> GetBookDetails(int bookId, CancellationToken cancellationToken)
         {
-            var book = await _bookRepository.GetByIdAsync(bookId);
+            var book = await _bookRepository.GetByIdAsync(bookId,cancellationToken);
             if (book == null)
             {
                 throw new Exception("Book not found.");
@@ -122,9 +122,9 @@ namespace Infrastructure.Services
             };
         }
 
-        public async Task<BookRDto> GetBookDetails(string bookName)
+        public async Task<BookRDto> GetBookDetails(string bookName, CancellationToken cancellationToken)
         {
-            var book = await _bookRepository.GetByNameAsync(bookName);
+            var book = await _bookRepository.GetByNameAsync(bookName, cancellationToken);
             if (book == null)
             {
                 throw new Exception("Book not found.");
@@ -144,9 +144,9 @@ namespace Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<BookRDto>> ListBooks()
+        public async Task<IEnumerable<BookRDto>> ListBooks(CancellationToken cancellationToken)
         {
-            var books = await _bookRepository.GetAllAsync();
+            var books = await _bookRepository.GetAllAsync(cancellationToken);
             return books.Select(b => new BookRDto
             {
                 ID = b.ID,

@@ -17,13 +17,11 @@ namespace Application.Query.Author
         {
             if (request.ID != 0 && request.Name == null)
             {
-                var res = await _authorService.GetAuthorDetails(request.ID);
-                return res;
+                return await _authorService.GetAuthorDetails(request.ID, cancellationToken);
             }
             else if (request.Name != null && request.ID == 0)
             {
-                var res = await _authorService.GetAuthorDetails(request.Name);
-                return res;
+                return await _authorService.GetAuthorDetails(request.Name, cancellationToken);
             }
             else
             {

@@ -14,7 +14,7 @@ namespace Application.Commands.Category
 
         public async Task<Unit> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
         {
-            await _categoryService.DeleteCategory(request.Id);
+            await _categoryService.DeleteCategory(request.Id, cancellationToken);
             return Unit.Value;
         }
     }

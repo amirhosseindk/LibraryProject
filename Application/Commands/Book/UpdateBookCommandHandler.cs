@@ -14,7 +14,7 @@ namespace Application.Commands.Book
 
         public Task<Unit> Handle(UpdateBookCommand request, CancellationToken cancellationToken)
         {
-            _bookService.UpdateBook(request.BookDto);
+            _bookService.UpdateBook(request.BookDto,cancellationToken);
             return Unit.Task;
         }
     }

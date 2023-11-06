@@ -10,10 +10,10 @@ namespace Application.Commands.Author
         {
             _authorService = authorService;
         }
-        public Task<Unit> Handle(DeleteAuthorCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DeleteAuthorCommand request, CancellationToken cancellationToken)
         {
-            _authorService.DeleteAuthor(request.Id);
-            return Unit.Task;
+            await _authorService.DeleteAuthor(request.Id, cancellationToken);
+            return Unit.Value;
         }
     }
 }

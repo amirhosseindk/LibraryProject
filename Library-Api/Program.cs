@@ -28,10 +28,6 @@ builder.Services.AddScoped<DbSession>(provider =>
     return dbSession;
 });
 
-builder.Services.AddScoped<IDbConnection>(provider =>
-    provider.GetRequiredService<DbSession>().Connection
-);
-
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();

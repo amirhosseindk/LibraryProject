@@ -4,11 +4,11 @@ namespace Application.Patterns
 {
     public interface ICategoryRepository
     {
-        Task<Category> GetByIdAsync(int id);
-        Task<IEnumerable<Category>> GetAllAsync();
-        Task AddAsync(Category category);
-        void Update(Category category);
-        void Delete(Category category);
-        Task<Category> GetByNameAsync(string name);
+        Task<Category> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task AddAsync(Category category, CancellationToken cancellationToken = default);
+		Task UpdateAsync(Category category, CancellationToken cancellationToken = default);
+		Task DeleteAsync(Category category, CancellationToken cancellationToken = default);
+        Task<Category> GetByNameAsync(string name, CancellationToken cancellationToken = default);
     }
 }

@@ -4,11 +4,11 @@ namespace Application.UseCases.Category
 {
     public interface ICategoryService
     {
-        Task<int> CreateCategory(CategoryCDto categoryDto);
-        Task UpdateCategory(CategoryUDto categoryDto);
-        Task DeleteCategory(int categoryId);
-        Task<CategoryRDto> GetCategoryDetails(int categoryId);
-        Task<CategoryRDto> GetCategoryDetails(string name);
-        Task<IEnumerable<CategoryRDto>> ListCategories();
+        Task<int> CreateCategory(CategoryCDto categoryDto, CancellationToken cancellationToken = default);
+        Task UpdateCategory(CategoryUDto categoryDto, CancellationToken cancellationToken = default);
+        Task DeleteCategory(int categoryId, CancellationToken cancellationToken = default);
+        Task<CategoryRDto> GetCategoryDetails(int categoryId, CancellationToken cancellationToken = default);
+        Task<CategoryRDto> GetCategoryDetails(string name, CancellationToken cancellationToken = default);
+        Task<IEnumerable<CategoryRDto>> ListCategories(CancellationToken cancellationToken = default);
     }
 }

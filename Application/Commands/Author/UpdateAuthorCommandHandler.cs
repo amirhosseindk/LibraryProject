@@ -14,7 +14,7 @@ namespace Application.Commands.Author
 
         public Task<Unit> Handle(UpdateAuthorCommand request, CancellationToken cancellationToken)
         {
-            _authorService.UpdateAuthor(request.AuthorDto);
+            _authorService.UpdateAuthor(request.AuthorDto, cancellationToken);
             return Unit.Task;
         }
     }

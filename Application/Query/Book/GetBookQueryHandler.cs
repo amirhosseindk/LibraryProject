@@ -17,13 +17,11 @@ namespace Application.Query.Book
         {
             if (request.ID != 0 && request.Name == null)
             {
-                var res = await _bookService.GetBookDetails(request.ID);
-                return res;
+                return await _bookService.GetBookDetails(request.ID, cancellationToken);
             }
             else if (request.Name != null && request.ID == 0)
             {
-                var res = await _bookService.GetBookDetails(request.Name);
-                return res;
+                return await _bookService.GetBookDetails(request.Name, cancellationToken);
             }
             else
             {

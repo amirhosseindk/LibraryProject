@@ -14,8 +14,7 @@ namespace Application.Commands.Author
 
         public async Task<int> Handle(CreateAuthorCommand request, CancellationToken cancellationToken)
         {
-            var res = await _authorService.CreateAuthor(request.AuthorDto);
-            return res;
+            return await _authorService.CreateAuthor(request.AuthorDto,cancellationToken);
         }
     }
 }

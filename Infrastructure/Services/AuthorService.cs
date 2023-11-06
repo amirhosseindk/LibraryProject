@@ -16,12 +16,12 @@ namespace Infrastructure.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<int> CreateAuthor(AuthorCDto authorDto)
+        public async Task<int> CreateAuthor(AuthorCDto authorDto, CancellationToken cancellationToken = default)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingAuthor = await _authorRepository.GetByNameAsync(authorDto.LastName);
+                var existingAuthor = await _authorRepository.GetByNameAsync(authorDto.LastName,cancellationToken);
                 if (existingAuthor != null)
                 {
                     throw new Exception("Author with this name already exists.");
@@ -33,7 +33,7 @@ namespace Infrastructure.Services
                     LastName = authorDto.LastName
                 };
 
-                await _authorRepository.AddAsync(author);
+                await _authorRepository.AddAsync(author, cancellationToken);
                 _unitOfWork.Commit();
 
                 return author.ID;
@@ -45,12 +45,12 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task UpdateAuthor(AuthorUDto authorDto)
+        public async Task UpdateAuthor(AuthorUDto authorDto, CancellationToken cancellationToken = default)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingAuthor = await _authorRepository.GetByIdAsync(authorDto.ID);
+                var existingAuthor = await _authorRepository.GetByIdAsync(authorDto.ID, cancellationToken);
                 if (existingAuthor == null)
                 {
                     throw new Exception("Author not found.");
@@ -59,7 +59,7 @@ namespace Infrastructure.Services
                 existingAuthor.FirstName = authorDto.FirstName;
                 existingAuthor.LastName = authorDto.LastName;
 
-                await _authorRepository.Update(existingAuthor);
+                await _authorRepository.Update(existingAuthor, cancellationToken);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -69,18 +69,18 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task DeleteAuthor(int authorId)
+        public async Task DeleteAuthor(int authorId, CancellationToken cancellationToken = default)
         {
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingAuthor = await _authorRepository.GetByIdAsync(authorId);
+                var existingAuthor = await _authorRepository.GetByIdAsync(authorId, cancellationToken);
                 if (existingAuthor == null)
                 {
                     throw new Exception("Author not found.");
                 }
 
-                await _authorRepository.Delete(existingAuthor);
+                await _authorRepository.Delete(existingAuthor, cancellationToken);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -90,9 +90,9 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task<AuthorRDto> GetAuthorDetails(int authorId)
+        public async Task<AuthorRDto> GetAuthorDetails(int authorId, CancellationToken cancellationToken = default)
         {
-            var author = await _authorRepository.GetByIdAsync(authorId);
+            var author = await _authorRepository.GetByIdAsync(authorId, cancellationToken);
             if (author == null)
             {
                 throw new Exception("Author not found.");
@@ -106,9 +106,9 @@ namespace Infrastructure.Services
             };
         }
 
-        public async Task<AuthorRDto> GetAuthorDetails(string authorName)
+        public async Task<AuthorRDto> GetAuthorDetails(string authorName, CancellationToken cancellationToken = default)
         {
-            var author = await _authorRepository.GetByNameAsync(authorName);
+            var author = await _authorRepository.GetByNameAsync(authorName, cancellationToken);
             if (author == null)
             {
                 throw new Exception("Author not found.");
@@ -122,9 +122,9 @@ namespace Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<AuthorRDto>> ListAuthors()
+        public async Task<IEnumerable<AuthorRDto>> ListAuthors(CancellationToken cancellationToken = default)
         {
-            var authors = await _authorRepository.GetAllAsync();
+            var authors = await _authorRepository.GetAllAsync(cancellationToken);
             return authors.Select(a => new AuthorRDto
             {
                 ID = a.ID,

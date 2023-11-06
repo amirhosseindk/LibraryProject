@@ -4,11 +4,11 @@ namespace Application.Patterns
 {
     public interface IInventoryRepository
     {
-        Task<Inventory> GetByIdAsync(int bookId);
-        Task<IEnumerable<Inventory>> GetAllAsync();
-        Task AddAsync(Inventory inventory);
-        void Update(Inventory inventory);
-        void Delete(Inventory inventory);
-        Task<Inventory> GetByNameAsync(string name);
+        Task<Inventory> GetByIdAsync(int bookId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Inventory>> GetAllAsync(CancellationToken cancellationToken);
+        Task AddAsync(Inventory inventory, CancellationToken cancellationToken);
+        void Update(Inventory inventory, CancellationToken cancellationToken);
+        void Delete(Inventory inventory, CancellationToken cancellationToken);
+        Task<Inventory> GetByNameAsync(string name, CancellationToken cancellationToken);
     }
 }

@@ -12,7 +12,7 @@ namespace Application.Commands.Book
         }
         public Task<Unit> Handle(DeleteBookCommand request, CancellationToken cancellationToken)
         {
-            _bookService.DeleteBook(request.Id);
+            _bookService.DeleteBook(request.Id,cancellationToken);
             return Unit.Task;
         }
     }

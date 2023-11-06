@@ -12,10 +12,9 @@ namespace Application.Query.Book
             _bookService = bookService;
         }
 
-        public Task<IEnumerable<BookRDto>> Handle(GetBooksQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<BookRDto>> Handle(GetBooksQuery request, CancellationToken cancellationToken)
         {
-            var res = _bookService.ListBooks();
-            return res;
+            return await _bookService.ListBooks(cancellationToken);
         }
     }
 }

@@ -14,8 +14,7 @@ namespace Application.Commands.Book
 
         public async Task<int> Handle(CreateBookCommand request, CancellationToken cancellationToken)
         {
-            var res = await _bookService.CreateBook(request.BookDto);
-            return res;
+            return await _bookService.CreateBook(request.BookDto, cancellationToken);
         }
     }
 }
