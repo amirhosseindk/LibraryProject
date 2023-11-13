@@ -7,15 +7,13 @@ using System.Data;
 
 namespace Infrastructure.Repositories
 {
-	public class BookRepository : IBookRepository
+    public class BookReadRepository : IBookReadRepository
     {
         private readonly DbSession _session;
-
-        public BookRepository(DbSession session)
+        public BookReadRepository( DbSession session )
         {
             _session = session;
         }
-
         public async Task<Book> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var query = @"
@@ -32,7 +30,7 @@ namespace Infrastructure.Repositories
                     query,
                     new { Id = id },
                     _session.Transaction,
-                    cancellationToken:cancellationToken
+                    cancellationToken: cancellationToken
                     )
                 ).ConfigureAwait(false);
 
@@ -51,7 +49,7 @@ namespace Infrastructure.Repositories
             return book;
         }
 
-        public async Task<Book> GetByNameAsync(string name , CancellationToken cancellationToken = default)
+        public async Task<Book> GetByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             var query = @"
                 SELECT b.*, 
@@ -62,16 +60,16 @@ namespace Infrastructure.Repositories
                 LEFT JOIN Categories c ON b.CategoryID = c.ID
                 WHERE b.Name = @Name";
 
-			var result = await _session.Connection.QueryFirstOrDefaultAsync<BookRDto>(
-				new CommandDefinition(
-					query,
-					new { Name = name },
-			        _session.Transaction,
-					cancellationToken: cancellationToken
-					)
-				).ConfigureAwait(false);
+            var result = await _session.Connection.QueryFirstOrDefaultAsync<BookRDto>(
+                new CommandDefinition(
+                    query,
+                    new { Name = name },
+                    _session.Transaction,
+                    cancellationToken: cancellationToken
+                    )
+                ).ConfigureAwait(false);
 
-			if (result == null)
+            if (result == null)
             {
                 return null;
             }
@@ -101,7 +99,7 @@ namespace Infrastructure.Repositories
             return book;
         }
 
-        public async Task<IEnumerable<Book>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<Book>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var query = @"
                 SELECT b.*, 
@@ -115,7 +113,7 @@ namespace Infrastructure.Repositories
                 new CommandDefinition(
                     query,
                     _session.Transaction,
-                    cancellationToken:cancellationToken
+                    cancellationToken: cancellationToken
                     )
                 ).ConfigureAwait(false);
 
@@ -133,71 +131,5 @@ namespace Infrastructure.Repositories
             });
             return books;
         }
-
-        public async Task AddAsync(Book book, CancellationToken cancellationToken = default)
-        {
-            var query = "INSERT INTO Books (Name, AuthorID, CategoryID, Publisher, Price, Score, Summary, PublishYear) VALUES (@Name, @AuthorID, @CategoryID, @Publisher, @Price, @Score, @Summary, @PublishYear)";
-            
-            var parameters = new
-            {
-                Name = book.Name,
-                AuthorID = book.Author.ID,
-                CategoryID = book.Category.ID,
-                Publisher = book.Publisher,
-                Price = book.Price,
-                Score = book.Score,
-                Summary = book.Summary,
-                PublishYear = book.PublishYear
-            };
-
-            await _session.Connection.ExecuteAsync(
-                new CommandDefinition(
-                    query,
-                    parameters,
-                    _session.Transaction,
-                    cancellationToken:cancellationToken
-                    )
-                ).ConfigureAwait(false);
-        }
-
-        public async Task Update(Book book, CancellationToken cancellationToken = default)
-        {
-            var query = "UPDATE Books SET Name = @Name, AuthorID = @AuthorID, CategoryID = @CategoryID, Publisher = @Publisher, Price = @Price, Score = @Score, Summary = @Summary, PublishYear = @PublishYear WHERE ID = @ID";
-            
-            var parameters = new
-            {
-                ID = book.ID,
-                Name = book.Name,
-                AuthorID = book.Author.ID,
-                CategoryID = book.Category.ID,
-                Publisher = book.Publisher,
-                Price = book.Price,
-                Summary = book.Summary,
-                Score = book.Score,
-                PublishYear = book.PublishYear
-            };
-
-			await _session.Connection.ExecuteAsync(
-				new CommandDefinition(
-					query,
-					parameters,
-			_session.Transaction,
-					cancellationToken: cancellationToken
-					)
-				).ConfigureAwait(false);
-		}
-
-        public async Task Delete(Book book , CancellationToken cancellationToken)
-        {
-            var query = "DELETE FROM Books WHERE ID = @ID";
-			await _session.Connection.ExecuteAsync(
-				new CommandDefinition(
-					query,
-					new {book.ID},
-			        _session.Transaction,
-					cancellationToken: cancellationToken
-					)
-				).ConfigureAwait(false);
-		}
     }
 }

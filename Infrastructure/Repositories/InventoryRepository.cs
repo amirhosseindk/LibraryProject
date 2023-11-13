@@ -14,37 +14,37 @@ namespace Infrastructure.Repositories
             _session = session;
         }
 
-        public async Task<Inventory> GetByIdAsync(int bookId)
+        public async Task<Inventory> GetByIdAsync(int bookId, CancellationToken cancellationToken = default)
         {
             var query = "SELECT * FROM Inventories WHERE BookID = @BookID";
             return await _session.Connection.QuerySingleOrDefaultAsync<Inventory>(query, new { BookID = bookId }, _session.Transaction);
         }
 
-        public async Task<IEnumerable<Inventory>> GetAllAsync()
+        public async Task<IEnumerable<Inventory>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var query = "SELECT * FROM Inventories";
             return await _session.Connection.QueryAsync<Inventory>(query, _session.Transaction);
         }
 
-        public async Task AddAsync(Inventory inventory)
+        public async Task AddAsync(Inventory inventory, CancellationToken cancellationToken = default)
         {
             var query = "INSERT INTO Inventories (BookID, QuantityAvailable, QuantitySold, QuantityBorrowed) VALUES (@BookID, @QuantityAvailable, @QuantitySold, @QuantityBorrowed)";
             await _session.Connection.ExecuteAsync(query, inventory, _session.Transaction);
         }
 
-        public void Update(Inventory inventory)
+        public void Update(Inventory inventory, CancellationToken cancellationToken = default)
         {
             var query = "UPDATE Inventories SET QuantityAvailable = @QuantityAvailable, QuantitySold = @QuantitySold, QuantityBorrowed = @QuantityBorrowed WHERE BookID = @BookID";
             _session.Connection.Execute(query, inventory, _session.Transaction);
         }
 
-        public void Delete(Inventory inventory)
+        public void Delete(Inventory inventory, CancellationToken cancellationToken = default)
         {
             var query = "DELETE FROM Inventories WHERE BookID = @BookID";
             _session.Connection.Execute(query, new { BookID = inventory.BookId }, _session.Transaction);
         }
 
-        public async Task<Inventory> GetByNameAsync(string name)
+        public async Task<Inventory> GetByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             var query = @"SELECT i.* 
                   FROM Inventories i
