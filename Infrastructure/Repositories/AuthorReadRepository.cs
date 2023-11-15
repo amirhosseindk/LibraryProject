@@ -5,11 +5,11 @@ using Infrastructure.Database;
 
 namespace Infrastructure.Repositories
 {
-	public class AuthorRepository : IAuthorRepository
+	public class AuthorReadRepository : IAuthorReadRepository
 	{
-		private readonly DbSession _session;
+		private readonly AppDbSession _session;
 
-		public AuthorRepository(DbSession session)
+		public AuthorReadRepository(AppDbSession session)
 		{
 			_session = session;
 		}
@@ -50,45 +50,6 @@ namespace Infrastructure.Repositories
 			return await _session.Connection.QueryAsync<Author>(
 				new CommandDefinition(
 					query,
-					_session.Transaction,
-					cancellationToken: cancellationToken
-					)
-				).ConfigureAwait(false);
-		}
-
-		public async Task AddAsync(Author author, CancellationToken cancellationToken = default)
-		{
-			var query = "INSERT INTO Authors (FirstName, LastName) VALUES (@FirstName, @LastName)";
-			await _session.Connection.ExecuteAsync(
-				new CommandDefinition(
-					query, 
-					author, 
-					_session.Transaction,
-					cancellationToken:cancellationToken
-					)
-				).ConfigureAwait(false);
-		}
-
-		public async Task Update(Author author, CancellationToken cancellationToken = default)
-		{
-			var query = "UPDATE Authors SET FirstName = @FirstName, LastName = @LastName WHERE ID = @ID";
-			await _session.Connection.ExecuteAsync(
-				new CommandDefinition(
-					query,
-					author,
-					_session.Transaction,
-					cancellationToken: cancellationToken
-					)
-				).ConfigureAwait(false);
-		}
-
-		public async Task Delete(Author author, CancellationToken cancellationToken = default)
-		{
-			var query = "DELETE FROM Authors WHERE ID = @ID";
-			await _session.Connection.ExecuteAsync(
-				new CommandDefinition(
-					query,
-					new { author.ID },
 					_session.Transaction,
 					cancellationToken: cancellationToken
 					)

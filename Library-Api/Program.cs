@@ -25,10 +25,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
-builder.Services.AddScoped<DbSession>(provider =>
+builder.Services.AddScoped<AppDbSession>(provider =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    var dbSession = new DbSession(connectionString);
+    var dbSession = new AppDbSession(connectionString);
     return dbSession;
 });
 
@@ -36,10 +36,14 @@ builder.Services.AddScoped<DbSession>(provider =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBookWriteRepository, BookWriteRepository>();
 builder.Services.AddScoped<IBookReadRepository, BookReadRepository>(); 
-builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
-builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IInventoryWriteRepository, InventoryWriteRepository>();
+builder.Services.AddScoped<IInventoryReadRepository, InventoryReadRepository>();
+builder.Services.AddScoped<IAuthorReadRepository, AuthorReadRepository>();
+builder.Services.AddScoped<IAuthorWriteRepository, AuthorWriteRepository>();
+builder.Services.AddScoped<ICategoryWriteRepository, CategoryWriteRepository>();
+builder.Services.AddScoped<ICategoryReadRepository, CategoryReadRepository>();
+builder.Services.AddScoped<IUserWriteRepository, UserWriteRepository>();
+builder.Services.AddScoped<IUserReadRepository, UserReadRepository>();
 builder.Services.AddScoped<IBookService,BookService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IAuthorService,AuthorService>();

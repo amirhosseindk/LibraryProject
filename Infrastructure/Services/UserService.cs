@@ -7,13 +7,15 @@ namespace Infrastructure.Services
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserReadRepository _userReadRepository;
+        private readonly IUserWriteRepository _userWriteRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(IUserRepository userRepository, IUnitOfWork unitOfWork)
+        public UserService(IUnitOfWork unitOfWork, IUserWriteRepository userWriteRepository, IUserReadRepository userReadRepository)
         {
-            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
+            _userWriteRepository = userWriteRepository;
+            _userReadRepository = userReadRepository;
         }
 
         public async Task DeleteUser(int userId)
@@ -21,13 +23,13 @@ namespace Infrastructure.Services
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingUser = await _userRepository.GetByIdAsync(userId);
+                var existingUser = await _userReadRepository.GetByIdAsync(userId);
                 if (existingUser == null)
                 {
                     throw new Exception("User not found.");
                 }
 
-                _userRepository.Delete(existingUser.ID);
+                _userWriteRepository.Delete(existingUser.ID);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -39,7 +41,7 @@ namespace Infrastructure.Services
 
         public async Task<UserRDto> GetUserDetails(int userId)
         {
-            var existingUser = await _userRepository.GetByIdAsync(userId);
+            var existingUser = await _userReadRepository.GetByIdAsync(userId);
             if (existingUser == null)
             {
                 throw new Exception("User not found.");
@@ -59,7 +61,7 @@ namespace Infrastructure.Services
 
         public async Task<IEnumerable<UserRDto>> ListUsers()
         {
-            var Users = await _userRepository.GetAllAsync();
+            var Users = await _userReadRepository.GetAllAsync();
             return Users.Select(a => new UserRDto
             {
                 ID = a.ID,
@@ -77,7 +79,7 @@ namespace Infrastructure.Services
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingUser = await _userRepository.GetByNameAsync(userDto.Username);
+                var existingUser = await _userReadRepository.GetByNameAsync(userDto.Username);
                 if (existingUser != null)
                 {
                     throw new Exception("User with this Username already exists.");
@@ -96,7 +98,7 @@ namespace Infrastructure.Services
                     Role = userDto.UserRole
                 };
 
-                await _userRepository.AddAsync(user);
+                await _userWriteRepository.AddAsync(user);
                 _unitOfWork.Commit();
 
                 return user.ID;
@@ -113,7 +115,7 @@ namespace Infrastructure.Services
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingUser = await _userRepository.GetByIdAsync(userDto.ID);
+                var existingUser = await _userReadRepository.GetByIdAsync(userDto.ID);
 
                 if (existingUser == null)
                 {
@@ -130,7 +132,7 @@ namespace Infrastructure.Services
                 existingUser.Phone = userDto.Phone;
                 existingUser.Role = userDto.UserRole;
 
-                _userRepository.Update(existingUser);
+                _userWriteRepository.Update(existingUser);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -142,7 +144,7 @@ namespace Infrastructure.Services
 
         public async Task<UserRoles> GetUserRole(int userId)
         {
-            var existingUser = await _userRepository.GetByIdAsync(userId);
+            var existingUser = await _userReadRepository.GetByIdAsync(userId);
             if (existingUser == null)
             {
                 throw new Exception("User not found.");

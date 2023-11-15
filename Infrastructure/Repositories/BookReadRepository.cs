@@ -9,8 +9,8 @@ namespace Infrastructure.Repositories
 {
     public class BookReadRepository : IBookReadRepository
     {
-        private readonly DbSession _session;
-        public BookReadRepository( DbSession session )
+        private readonly AppDbSession _session;
+        public BookReadRepository( AppDbSession session )
         {
             _session = session;
         }

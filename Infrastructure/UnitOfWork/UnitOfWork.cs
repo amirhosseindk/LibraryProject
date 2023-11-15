@@ -5,9 +5,9 @@ namespace Infrastructure.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly DbSession _session;
+        private readonly AppDbSession _session;
 
-        public UnitOfWork(DbSession session)
+        public UnitOfWork(AppDbSession session)
         {
             _session = session;
         }

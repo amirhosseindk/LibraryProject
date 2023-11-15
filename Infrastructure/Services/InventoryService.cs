@@ -7,13 +7,15 @@ namespace Infrastructure.Services
 {
     public class InventoryService : IInventoryService
     {
-        private readonly IInventoryRepository _inventoryRepository;
+        private readonly IInventoryReadRepository _inventoryReadRepository;
+        private readonly IInventoryWriteRepository _inventoryWriteRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public InventoryService(IUnitOfWork unitOfWork, IInventoryRepository inventoryRepository)
+        public InventoryService(IUnitOfWork unitOfWork,IInventoryReadRepository inventoryReadRepository, IInventoryWriteRepository inventoryWriteRepository)
         {
             _unitOfWork = unitOfWork;
-            _inventoryRepository = inventoryRepository;
+            _inventoryReadRepository = inventoryReadRepository;
+            _inventoryWriteRepository = inventoryWriteRepository;
         }
 
         public async Task UpdateInventory(InventoryUDto inventoryDto)
@@ -21,7 +23,7 @@ namespace Infrastructure.Services
             _unitOfWork.BeginTransaction();
             try
             {
-                var inventory = await _inventoryRepository.GetByIdAsync(inventoryDto.BookId);
+                var inventory = await _inventoryReadRepository.GetByIdAsync(inventoryDto.BookId);
                 if (inventory == null)
                 {
                     throw new Exception("Inventory not found.");
@@ -31,7 +33,7 @@ namespace Infrastructure.Services
                 inventory.QuantitySold = inventoryDto.QuantitySold;
                 inventory.QuantityBorrowed = inventoryDto.QuantityBorrowed;
 
-                _inventoryRepository.Update(inventory);
+                _inventoryWriteRepository.Update(inventory);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -44,7 +46,7 @@ namespace Infrastructure.Services
 
         public async Task<InventoryRDto> GetInventoryDetailsByBookId(int bookId)
         {
-            var inventory = await _inventoryRepository.GetByIdAsync(bookId);
+            var inventory = await _inventoryReadRepository.GetByIdAsync(bookId);
             if (inventory == null)
             {
                 throw new Exception("Inventory not found.");
@@ -61,7 +63,7 @@ namespace Infrastructure.Services
 
         public async Task<IEnumerable<InventoryRDto>> ListInventories()
         {
-            var inventories = await _inventoryRepository.GetAllAsync();
+            var inventories = await _inventoryReadRepository.GetAllAsync();
             return new List<InventoryRDto>(inventories.Select(inventory => new InventoryRDto
             {
                 BookId = inventory.BookId,
@@ -83,7 +85,7 @@ namespace Infrastructure.Services
             try
             {
                 _unitOfWork.BeginTransaction();
-                var inventory = await _inventoryRepository.GetByIdAsync(bookId);
+                var inventory = await _inventoryReadRepository.GetByIdAsync(bookId);
                 if (inventory == null)
                 {
                     throw new Exception("Inventory not found.");
@@ -102,7 +104,7 @@ namespace Infrastructure.Services
                         break;
                 }
 
-                _inventoryRepository.Update(inventory);
+                _inventoryWriteRepository.Update(inventory);
                 _unitOfWork.Commit();
             }
             catch (Exception)
@@ -118,7 +120,7 @@ namespace Infrastructure.Services
             try
             {
                 var bookId = inventoryCDto.BookId;
-                var existingInventory = await _inventoryRepository.GetByIdAsync(bookId);
+                var existingInventory = await _inventoryReadRepository.GetByIdAsync(bookId);
                 if (existingInventory != null)
                 {
                     throw new Exception("Inventory for this book already exists.");
@@ -132,7 +134,7 @@ namespace Infrastructure.Services
                         QuantitySold = inventoryCDto.QuantitySold,
                         QuantityBorrowed = inventoryCDto.QuantityBorrowed
                     };
-                    await _inventoryRepository.AddAsync(newInventory);
+                    await _inventoryWriteRepository.AddAsync(newInventory);
                 }
                 _unitOfWork.Commit();
                 return bookId;
@@ -149,13 +151,13 @@ namespace Infrastructure.Services
             _unitOfWork.BeginTransaction();
             try
             {
-                var inventory = await _inventoryRepository.GetByIdAsync(bookId);
+                var inventory = await _inventoryReadRepository.GetByIdAsync(bookId);
                 if (inventory == null)
                 {
                     throw new Exception("Inventory not found.");
                 }
 
-                _inventoryRepository.Delete(inventory);
+                _inventoryWriteRepository.Delete(inventory);
                 _unitOfWork.Commit();
             }
             catch (Exception)
